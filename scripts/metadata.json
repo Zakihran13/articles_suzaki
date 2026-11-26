@@ -1,0 +1,112 @@
+[
+    {
+        "id": "business/live/2026/nov/26/nvidia-chip-shipments-south-east-asia-stock-dentists-live-updates",
+        "type": "liveblog",
+        "sectionId": "business",
+        "sectionName": "Business",
+        "webPublicationDate": "2026-11-26T13:35:33Z",
+        "webTitle": "Bank of England warns of growing financial risks from ‘opaque’ AI financing – business live",
+        "webUrl": "https://www.theguardian.com/business/live/2026/nov/26/nvidia-chip-shipments-south-east-asia-stock-dentists-live-updates",
+        "apiUrl": "https://content.guardianapis.com/business/live/2026/nov/26/nvidia-chip-shipments-south-east-asia-stock-dentists-live-updates",
+        "fields": {
+            "headline": "Bank of England warns of growing financial risks from ‘opaque’ AI financing – business live",
+            "trailText": "UK central bank says the very rapid expansion and broadening of funding for AI industry poses a threat to financial stability",
+            "byline": "Julia Kollewe",
+            "thumbnail": "https://media.guim.co.uk/f2e8c5f6356d0de485d166a576b294be69825d63/1094_0_4954_3963/500.jpg"
+        },
+        "isHosted": false,
+        "pillarId": "pillar/news",
+        "pillarName": "News",
+        "created_at": "2026-11-26T13:37:53.247297+00:00",
+        "updated_at": "2026-11-26T13:42:03.674117+00:00",
+        "is_pull": true
+    },
+    {
+        "id": "money/2026/nov/26/430000-uk-homeowners-500-jump-monthly-mortgage-payments-bank-of-england-interest-rates",
+        "type": "article",
+        "sectionId": "money",
+        "sectionName": "Money",
+        "webPublicationDate": "2026-11-26T12:44:46Z",
+        "webTitle": "430,000 UK homeowners face £500-plus jump in monthly mortgage payments",
+        "webUrl": "https://www.theguardian.com/money/2026/nov/26/430000-uk-homeowners-500-jump-monthly-mortgage-payments-bank-of-england-interest-rates",
+        "apiUrl": "https://content.guardianapis.com/money/2026/nov/26/430000-uk-homeowners-500-jump-monthly-mortgage-payments-bank-of-england-interest-rates",
+        "fields": {
+            "headline": "430,000 UK homeowners face £500-plus jump in monthly mortgage payments",
+            "trailText": "Bank of England warns of increases for millions coming off fixed deals over next three years as interest rates rise",
+            "byline": "Kalyeena Makortoff Banking correspondent",
+            "thumbnail": "https://media.guim.co.uk/76bae3267d5d42beeecac666ece9772680ada6e6/795_0_2761_2210/500.jpg"
+        },
+        "isHosted": false,
+        "pillarId": "pillar/lifestyle",
+        "pillarName": "Lifestyle",
+        "created_at": "2026-11-26T13:37:53.247297+00:00",
+        "updated_at": "2026-11-26T13:42:03.674117+00:00",
+        "is_pull": true
+    },
+    {
+        "id": "politics/2026/nov/26/ministry-of-defence-deal-babcock-maintain-submarines",
+        "type": "article",
+        "sectionId": "politics",
+        "sectionName": "Politics",
+        "webPublicationDate": "2026-11-26T12:07:29Z",
+        "webTitle": "Ministry of Defence signs £8.7bn deal with Babcock to maintain submarines",
+        "webUrl": "https://www.theguardian.com/politics/2026/nov/26/ministry-of-defence-deal-babcock-maintain-submarines",
+        "apiUrl": "https://content.guardianapis.com/politics/2026/nov/26/ministry-of-defence-deal-babcock-maintain-submarines",
+        "fields": {
+            "headline": "Ministry of Defence signs £8.7bn deal with Babcock to maintain submarines",
+            "trailText": "Wes Streeting says deal will ‘get our subs out of the docks and into the sea faster’ amid scrutiny of nuclear deterrent",
+            "byline": "Jasper Jolly",
+            "thumbnail": "https://media.guim.co.uk/7933bb2b4830bee80bfcd251d0dadefb6f85c178/402_0_2500_2000/500.jpg"
+        },
+        "isHosted": false,
+        "pillarId": "pillar/news",
+        "pillarName": "News",
+        "created_at": "2026-11-26T13:37:53.247297+00:00",
+        "updated_at": "2026-11-26T13:42:03.674117+00:00",
+        "is_pull": true
+    },
+    {
+        "id": "business/2026/nov/26/norse-atlantic-airways-suspends-all-flights-urgent-funding-plea",
+        "type": "article",
+        "sectionId": "business",
+        "sectionName": "Business",
+        "webPublicationDate": "2026-11-26T10:15:18Z",
+        "webTitle": "Norse Atlantic Airways suspends all flights as it makes urgent funding plea",
+        "webUrl": "https://www.theguardian.com/business/2026/nov/26/norse-atlantic-airways-suspends-all-flights-urgent-funding-plea",
+        "apiUrl": "https://content.guardianapis.com/business/2026/nov/26/norse-atlantic-airways-suspends-all-flights-urgent-funding-plea",
+        "fields": {
+            "headline": "Norse Atlantic Airways suspends all flights as it makes urgent funding plea",
+            "trailText": "Norwegian airline says its finances are ‘critical’ and it will file for bankruptcy if it cannot secure short-term backing",
+            "byline": "Gwyn Topham Transport correspondent",
+            "thumbnail": "https://media.guim.co.uk/ba8f0ceefe8d9460fdf5eb5e2c2fa863393283bf/0_0_3017_2415/500.jpg"
+        },
+        "isHosted": false,
+        "pillarId": "pillar/news",
+        "pillarName": "News",
+        "created_at": "2026-11-26T13:37:53.247297+00:00",
+        "updated_at": "2026-11-26T13:42:03.674117+00:00",
+        "is_pull": true
+    },
+    {
+        "id": "technology/2026/nov/26/jensen-huang-nvidia-tech",
+        "type": "article",
+        "sectionId": "technology",
+        "sectionName": "Technology",
+        "webPublicationDate": "2026-11-26T10:00:52Z",
+        "webTitle": "A vocal cohort of tech leaders celebrates Huang’s Nvidia return, but others are keeping quiet",
+        "webUrl": "https://www.theguardian.com/technology/2026/nov/26/jensen-huang-nvidia-tech",
+        "apiUrl": "https://content.guardianapis.com/technology/2026/nov/26/jensen-huang-nvidia-tech",
+        "fields": {
+            "headline": "A vocal cohort of tech leaders celebrates Huang’s Nvidia return, but others are keeping quiet",
+            "trailText": "Elon Musk and Sam Altman among those rejoicing but Google, Meta and Apple chiefs have declined to weigh in",
+            "byline": "Dara Kerr",
+            "thumbnail": "https://media.guim.co.uk/1c86eb468485514265ee27c663d10f3cb3fb8fb0/335_0_3331_2666/500.jpg"
+        },
+        "isHosted": false,
+        "pillarId": "pillar/news",
+        "pillarName": "News",
+        "created_at": "2026-11-26T13:37:53.247297+00:00",
+        "updated_at": "2026-11-26T13:42:03.674117+00:00",
+        "is_pull": true
+    }
+]
