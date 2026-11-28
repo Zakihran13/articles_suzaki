@@ -9,7 +9,7 @@ from urllib.parse import urljoin
 import httpx
 from loguru import logger
 
-from articles_suzaki.config import config
+from articles_suzaki.configuration.config import config
 
 METADATA_PATH = Path(__file__).with_name("metadata.json")
 NEWS_PATH = Path(__file__).with_name("news.json")

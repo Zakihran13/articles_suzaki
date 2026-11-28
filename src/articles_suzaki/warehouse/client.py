@@ -1,19 +1,20 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
-import os
 from loguru import logger
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import ConnectionFailure, ConfigurationError
+
+from articles_suzaki.configuration.config import config
 
 
 def init_async_db(pool_size=50, max_overflow=50) -> AsyncEngine:
     """Returns the db client"""
 
     try:
-        user = os.environ["POSTGRESQL_DB_USER"]
-        password = os.environ["POSTGRESQL_DB_PASSWORD"]
-        host = os.environ["POSTGRESQL_DB_HOST"]
-        port = os.environ["POSTGRESQL_DB_PORT"]
-        database = os.environ["POSTGRESQL_DB_NAME"]
+        user = config.postgres_db_user
+        password = config.postgres_db_password
+        host = config.postgres_db_host
+        port = config.postgres_db_port
+        database = config.postgres_db_name
     except KeyError as e:
         raise ValueError(f"Missing required database environment variable: {e}")
 
@@ -35,7 +36,7 @@ class AsyncMongoDBConnection:
         if cls._client is not None:
             return
 
-        uri = os.getenv("MONGO_URI")
+        uri = config.mongo_uri
         if not uri:
             raise ConfigurationError("MONGO_URI environment variable is not set.")
 
