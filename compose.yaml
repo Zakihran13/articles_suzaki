@@ -34,7 +34,8 @@ services:
     restart: unless-stopped
 
   dagster-webserver:
-    image: ghcr.io/dagster-io/dagster:latest
+    build: .
+    image: articles-suzaki-dagster
     container_name: idx_dagster_webserver
     command:
       - dagster-webserver
@@ -43,14 +44,18 @@ services:
       - -p
       - "3010"
       - -w
-      - workspace.yaml
+      - /app/docker/workspace.yaml
     ports:
       - "3010:3010"
     volumes:
-      - .:/opt/dagster/app
-    working_dir: /opt/dagster/app
+      - dagster_data:/opt/dagster/dagster_home
+      - ./docker/dagster.yaml:/opt/dagster/dagster_home/dagster.yaml:ro
+    env_file: .env
     environment:
       DAGSTER_HOME: /opt/dagster/dagster_home
+      POSTGRESQL_DB_HOST: postgres
+      POSTGRESQL_DB_PORT: "5432"
+      MONGO_URI: mongodb://mongo:27017/
     depends_on:
       postgres:
         condition: service_healthy
@@ -59,16 +64,23 @@ services:
     restart: unless-stopped
 
   dagster-daemon:
-    image: ghcr.io/dagster-io/dagster:latest
+    build: .
+    image: articles-suzaki-dagster
     container_name: idx_dagster_daemon
     command:
       - dagster-daemon
       - run
+      - -w
+      - /app/docker/workspace.yaml
     volumes:
-      - .:/opt/dagster/app
-    working_dir: /opt/dagster/app
+      - dagster_data:/opt/dagster/dagster_home
+      - ./docker/dagster.yaml:/opt/dagster/dagster_home/dagster.yaml:ro
+    env_file: .env
     environment:
       DAGSTER_HOME: /opt/dagster/dagster_home
+      POSTGRESQL_DB_HOST: postgres
+      POSTGRESQL_DB_PORT: "5432"
+      MONGO_URI: mongodb://mongo:27017/
     depends_on:
       dagster-webserver:
         condition: service_started
@@ -77,3 +89,4 @@ services:
 volumes:
   postgres_data:
   mongo_data:
+  dagster_data:

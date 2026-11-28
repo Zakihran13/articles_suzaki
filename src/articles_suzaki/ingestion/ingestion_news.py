@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime
+from datetime import date, datetime
 from loguru import logger
 import pandas as pd
 from typing import List, Any, Callable, AsyncGenerator
@@ -91,6 +91,8 @@ async def extract_news_stream(
     source: DataSource,
     news_ids: List[Any],
     batch_size: int = 100,
+    strict: bool = False,
+    preserve_metadata_date: bool = False,
 ) -> AsyncGenerator[tuple[List[dict], List[dict]], None]:
     """Stream news data in batches (async generator).
 
@@ -130,13 +132,29 @@ async def extract_news_stream(
         for meta, result in zip(batch_pending, results):
             if isinstance(result, Exception):
                 logger.error(f"Failed to pull {meta['id']}: {result}")
+                if strict:
+                    raise RuntimeError(f"Failed to pull {meta['id']}") from result
                 continue
 
             content = result.get("response", {}).get("content")
 
             if not content:
                 logger.error(f"No content returned for {meta['id']}")
+                if strict:
+                    raise RuntimeError(f"No content returned for {meta['id']}")
                 continue
+            if preserve_metadata_date:
+                content["webPublicationDate"] = meta["webPublicationDate"]
+                if content.get("fields"):
+                    content["fields"]["firstPublicationDate"] = meta["webPublicationDate"]
+                    content["fields"]["lastModified"] = meta["webPublicationDate"]
+            if strict:
+                if content.get("id") != meta["id"] or not content.get("webTitle"):
+                    raise RuntimeError(f"Invalid content returned for {meta['id']}")
+                try:
+                    datetime.fromisoformat(content["webPublicationDate"].replace("Z", "+00:00"))
+                except (KeyError, AttributeError, TypeError, ValueError) as exc:
+                    raise RuntimeError(f"Invalid publication date for {meta['id']}") from exc
 
             batch_news.append(content)
             batch_ids.append(meta)
@@ -160,6 +178,9 @@ async def main(
     batch_size: int = 100,
     max_concurrent_batches: int = 3,
     source_type: str | None = None,
+    from_date: date | None = None,
+    to_date: date | None = None,
+    strict: bool = False,
 ):
     """Main ingestion process with concurrent batch processing.
 
@@ -210,10 +231,15 @@ async def main(
     pending_tasks: set[asyncio.Task[None]] = set()
     try:
         logger.info("Fetching unprocessed news IDs...")
-        news_ids = await get_news_ids(coll_meta)
+        if from_date is not None or to_date is not None:
+            news_ids = await get_news_ids(
+                coll_meta, from_date=from_date, to_date=to_date, source_type=source_type
+            )
+        else:
+            news_ids = await get_news_ids(coll_meta)
 
         if not news_ids:
-            logger.error("No news metadata IDs found! Stopping the process...")
+            logger.info("No pending news metadata IDs found.")
             return
 
         logger.info(
@@ -223,7 +249,8 @@ async def main(
         batch_number = 0
 
         async for news_batch, ids_batch in extract_news_stream(
-            source, news_ids, batch_size
+            source, news_ids, batch_size, strict=strict,
+            preserve_metadata_date=strict and source_type == "mock",
         ):
             batch_number += 1
 
