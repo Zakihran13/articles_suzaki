@@ -40,5 +40,4 @@ COPY --from=builder /app /app
 # Place the virtual environment's binaries on the PATH
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Run your application (adjust command as needed)
-CMD ["python", "main.py"]
+CMD ["dagster-webserver", "-h", "0.0.0.0", "-p", "3010", "-w", "/app/docker/workspace.yaml"]

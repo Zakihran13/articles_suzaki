@@ -4,6 +4,7 @@ from loguru import logger
 import asyncio
 from pymongo import UpdateOne
 from typing import List
+from datetime import date, timedelta
 
 from articles_suzaki.configuration.helper import split_batch
 
@@ -58,9 +59,22 @@ async def upsert_data(
         raise failures[0]
 
 
-async def get_news_ids(coll: AsyncIOMotorCollection):
+async def get_news_ids(
+    coll: AsyncIOMotorCollection,
+    from_date: date | None = None,
+    to_date: date | None = None,
+    source_type: str | None = None,
+):
+    query = {"is_pull": False}
+    if source_type is not None:
+        query["ingestion_source"] = source_type
+    if from_date is not None and to_date is not None:
+        query["webPublicationDate"] = {
+            "$gte": f"{from_date.isoformat()}T00:00:00",
+            "$lt": f"{(to_date + timedelta(days=1)).isoformat()}T00:00:00",
+        }
     return await (
-        coll.find({"is_pull": False}, {"id": 1})
+        coll.find(query, {"id": 1, "webPublicationDate": 1})
         .sort("webPublicationDate", -1)
         .to_list(length=None)
     )

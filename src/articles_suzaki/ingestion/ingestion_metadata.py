@@ -28,8 +28,11 @@ def build_metadata_updates(data: List[Any], now: datetime):
                     "sectionName": n.get("sectionName"),
                     "created_at": n.get("created_at", now),
                     "updated_at": now,
-                    "is_pull": n.get("is_pull", False),
                     "deleted_at": None,  # For future recheck of deleted articles
+                    **({"ingestion_source": n["ingestion_source"]} if "ingestion_source" in n else {}),
+                },
+                "$setOnInsert": {
+                    "is_pull": n.get("is_pull", False),
                 }
             },
         }
@@ -279,6 +282,8 @@ async def main(
     from_date: date = config.prior_time,
     to_date: date = config.current_time,
     source_type: str | None = None,
+    max_roll: int | None = 2,
+    tag_source: bool = False,
 ):
     """Main ingestion process with concurrent batch processing.
 
@@ -332,13 +337,16 @@ async def main(
             current_time=config.current_time,
             page_size=page_size,
             cur_page=1,
-            max_roll=2,  # testing only (for API source)
-            from_date=from_date.date() if from_date else None,
-            to_date=to_date.date() if to_date else None,
+            max_roll=max_roll,
+            from_date=from_date.date() if isinstance(from_date, datetime) else from_date,
+            to_date=to_date.date() if isinstance(to_date, datetime) else to_date,
             batch_size=batch_size,
             source_type=source_type,
         ):
             batch_number += 1
+            if tag_source:
+                for record in batch:
+                    record["ingestion_source"] = source_type
 
             if not batch:
                 logger.warning("Empty batch received, skipping...")
