@@ -57,7 +57,7 @@ class GuardianClient:
         page: int = 1,
         page_size: int = 10,
         from_date: date | None = None,
-        to_date: date | None = None
+        to_date: date | None = None,
     ) -> dict:
 
         self._check_daily_limit()
@@ -76,7 +76,7 @@ class GuardianClient:
         if query:
             params["q"] = query
         if from_date:
-            params["from-date"] =  from_date
+            params["from-date"] = from_date
         if to_date:
             params["to-date"] = to_date
 
@@ -94,10 +94,15 @@ class GuardianClient:
     async def query(
         self,
         news_id: str,
-        params: dict,
     ):
         self._check_daily_limit()
         await self._rate_limit()
+
+        params = {
+            "api-key": self.api_key,
+            "show-fields": "all",
+            "show-tags": "all",
+        }
 
         response = await self.client.get(urljoin(self.BASE_URL, news_id), params=params)
 
@@ -106,4 +111,3 @@ class GuardianClient:
         self._request_count += 1
 
         return response.json()
-

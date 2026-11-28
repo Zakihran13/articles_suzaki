@@ -17,8 +17,16 @@ class articles_config(BaseSettings):
     postgres_db_port: str = Field(default="", alias="POSTGRESQL_DB_PORT")
     postgres_db_name: str = Field(default="", alias="POSTGRESQL_DB_NAME")
     mongo_uri: str = Field(default="", alias="MONGO_URI")
-
-
+    mongo_db_name: str = Field(default="", alias="MONGO_DB_NAME")
+    mongo_coll_metadata: str = Field(default="", alias="MONGO_COLL_METADATA")
+    mongo_coll_news: str = Field(default="", alias="MONGO_COLL_NEWS")
+    
+    # Data source configuration
+    data_source: str = Field(default="api", alias="DATA_SOURCE")
+    mock_total_articles: int = Field(default=1_000_000, alias="MOCK_TOTAL_ARTICLES")
+    mock_batch_size: int = Field(default=10, alias="MOCK_BATCH_SIZE")
+    mock_seed: int | None = Field(default=None, alias="MOCK_SEED")
+    
     @property
     def project_root(self) -> Path:
         return Path(__file__).resolve().parents[2]
@@ -30,7 +38,6 @@ class articles_config(BaseSettings):
     @property
     def prior_time(self) -> datetime:
         return self.current_time - timedelta(days=1)
-
 
 
 config = articles_config()

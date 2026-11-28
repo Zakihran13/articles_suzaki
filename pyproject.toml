@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "dagster>=1.13.31",
+    "faker>=30.0.0",
     "httpx>=0.28.1",
     "loguru>=0.8.0",
     "motor>=3.7.1",
@@ -17,6 +18,7 @@ dependencies = [
     "pydantic-settings>=2.16.3",
     "pymongo>=4.20.2",
     "pytest>=9.2.0",
+    "pytest-asyncio>=0.24.0",
     "pyyaml>=6.0.4",
     "sqlalchemy[asyncio]>=2.1.9",
 ]

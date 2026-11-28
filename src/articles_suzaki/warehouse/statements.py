@@ -42,18 +42,25 @@ async def upsert_data(
     semaphore = asyncio.Semaphore(max_concurrency)
     operation_tasks = [process_chunk(coll, chunk, semaphore) for chunk in batch_data]
 
-    if operation_tasks:
-        try:
-            results = await asyncio.gather(*operation_tasks, return_exceptions=True)
+    results = await asyncio.gather(*operation_tasks, return_exceptions=True)
+    failures = []
+    for result in results:
+        if isinstance(result, BaseException):
+            logger.error(f"Bulk write failed: {result}")
+            failures.append(result)
+        else:
+            logger.info(
+                f"matched={result.matched_count}, "
+                f"modified={result.modified_count}, "
+                f"upserted={result.upserted_count}"
+            )
+    if failures:
+        raise failures[0]
 
-            for result in results:
-                if isinstance(result, Exception):
-                    logger.error(f"Bulk write failed: {result}")
-                else:
-                    logger.info(
-                        f"matched={result.matched_count}, "
-                        f"modified={result.modified_count}, "
-                        f"upserted={result.upserted_count}"
-                    )
-        except Exception as e:
-            logger.error(f"An error occurred during bulk write: {e}")
+
+async def get_news_ids(coll: AsyncIOMotorCollection):
+    return await (
+        coll.find({"is_pull": False}, {"id": 1})
+        .sort("webPublicationDate", -1)
+        .to_list(length=None)
+    )
