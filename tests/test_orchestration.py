@@ -6,16 +6,29 @@ import pytest
 from dagster import DefaultScheduleStatus, Definitions, build_schedule_context
 
 from articles_suzaki.ingestion import ingestion_metadata, ingestion_news
+from articles_suzaki.logging import runs
 from articles_suzaki.orchestration.config import transformation_bounds
 from articles_suzaki.orchestration.definitions import defs
 from articles_suzaki.orchestration.jobs import (
-    daily_full_pipeline, historical_full_pipeline, ingestion_only_pipeline,
+    daily_full_pipeline, historical_full_pipeline, ingestion_only_pipeline, news_ingestion_only_pipeline,
     transformation_only_pipeline,
 )
 from articles_suzaki.orchestration.resources import PipelineResource
 from articles_suzaki.orchestration import resources
 from articles_suzaki.orchestration.schedules import daily_schedule
 from articles_suzaki.warehouse.statements import get_news_ids
+
+
+@pytest.fixture(autouse=True)
+def run_records(monkeypatch, tmp_path):
+    records = []
+
+    async def write_run(context, start, end, source, status, **kwargs):
+        records.append((context.run_id, context.job_name, status, kwargs))
+
+    monkeypatch.setenv("ARTICLES_LOG_DIR", str(tmp_path))
+    monkeypatch.setattr(runs, "_write_run", write_run)
+    return records
 
 
 @pytest.fixture
@@ -50,7 +63,7 @@ def test_definitions_and_disabled_schedule():
     assert result.run_requests[0].run_config == {"source": "api"}
 
 
-def test_historical_pipeline_runs_in_order_and_includes_end_date(pipeline):
+def test_historical_pipeline_runs_in_order_and_includes_end_date(pipeline, run_records):
     result = historical_full_pipeline.execute_in_process(
         run_config={"from_date": "2024-01-30", "to_date": "2024-02-02", "source": "mock"},
         resources={"pipeline": PipelineResource()},
@@ -59,6 +72,10 @@ def test_historical_pipeline_runs_in_order_and_includes_end_date(pipeline):
     assert [call[0] for call in pipeline] == ["metadata", "news", "validate", "transform"]
     assert all(call[1:3] == (date(2024, 1, 30), date(2024, 2, 2)) for call in pipeline)
     assert all(call[3] == "mock" for call in pipeline[:3])
+    assert [row[2] for row in run_records] == [
+        "started", "started", "started", "started", "started", "completed",
+    ]
+    assert {row[0] for row in run_records} == {result.run_id}
 
 
 def test_ingestion_and_transformation_only_are_independent(pipeline):
@@ -76,6 +93,28 @@ def test_ingestion_and_transformation_only_are_independent(pipeline):
         datetime(2024, 6, 1, tzinfo=timezone.utc),
         datetime(2024, 6, 2, tzinfo=timezone.utc),
     )
+
+
+@pytest.mark.parametrize("source", ["mock", "api"])
+def test_news_only_pipeline_uses_requested_window_and_source(pipeline, run_records, source):
+    result = news_ingestion_only_pipeline.execute_in_process(
+        run_config={"from_date": "2024-01-30", "to_date": "2024-02-02", "source": source},
+        resources={"pipeline": PipelineResource()},
+    )
+    assert result.success
+    assert pipeline == [("news", date(2024, 1, 30), date(2024, 2, 2), source)]
+    assert [row[2] for row in run_records] == ["started", "started", "completed"]
+    assert {row[0] for row in run_records} == {result.run_id}
+
+
+def test_news_only_rejects_invalid_window_before_ingestion(pipeline, run_records):
+    result = news_ingestion_only_pipeline.execute_in_process(
+        run_config={"from_date": "2024-02-02", "to_date": "2024-01-30", "source": "mock"},
+        resources={"pipeline": PipelineResource()}, raise_on_error=False,
+    )
+    assert not result.success
+    assert pipeline == []
+    assert run_records == []
 
 
 def test_daily_captures_one_utc_day(pipeline):
@@ -102,7 +141,7 @@ def test_invalid_dates_fail_before_ingestion(pipeline, start, end):
     assert pipeline == []
 
 
-def test_ingestion_failure_stops_downstream(monkeypatch, pipeline):
+def test_ingestion_failure_stops_downstream(monkeypatch, pipeline, run_records):
     def fail(self, start, end, source):
         raise RuntimeError("metadata failed")
     monkeypatch.setattr(PipelineResource, "ingest_metadata", fail)
@@ -112,6 +151,7 @@ def test_ingestion_failure_stops_downstream(monkeypatch, pipeline):
     )
     assert not result.success
     assert pipeline == []
+    assert run_records[-1][2:] == ("failed", {"error": "metadata failed"})
 
 
 @pytest.mark.parametrize("method", ["ingest_metadata", "ingest_news"])
@@ -147,6 +187,21 @@ def test_ingestion_passes_current_api_key_without_requiring_it_for_mock(
     PipelineResource().ingest_metadata(date(2024, 1, 1), date(2024, 1, 1), source)
     assert calls[0]["api_key"] == key
     assert calls[0]["source_type"] == source
+
+
+def test_news_ingestion_passes_window_and_source_to_main(monkeypatch):
+    calls = []
+
+    async def fake_main(**kwargs):
+        calls.append(kwargs)
+
+    monkeypatch.setattr(ingestion_news, "main", fake_main)
+    monkeypatch.setattr(resources.AsyncMongoDBConnection, "close", lambda: None)
+    PipelineResource().ingest_news(date(2024, 1, 30), date(2024, 2, 2), "mock")
+    assert calls[0]["from_date"] == date(2024, 1, 30)
+    assert calls[0]["to_date"] == date(2024, 2, 2)
+    assert calls[0]["source_type"] == "mock"
+    assert calls[0]["strict"] is True
 
 
 @pytest.mark.asyncio

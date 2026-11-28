@@ -45,6 +45,12 @@ def ingestion_only_pipeline() -> None:
     validate_ingestion(ingest_news(ingest_metadata(ingestion_window())))
 
 
+@job(config=ingestion_config)
+def news_ingestion_only_pipeline() -> None:
+    """Fetch news for existing metadata without ingesting new metadata."""
+    ingest_news(ingestion_window())
+
+
 @job(config=transform_config)
 def transformation_only_pipeline() -> None:
     """Transform previously ingested raw articles in an inclusive date range."""

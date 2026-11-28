@@ -9,6 +9,7 @@ from motor.motor_asyncio import AsyncIOMotorCollection
 from articles_suzaki.configuration.config import config
 from articles_suzaki.ingestion.client import GuardianClient
 from articles_suzaki.ingestion.data_mock.mock_data_generator import MockArticleGenerator
+from articles_suzaki.logging.flows import logged_async_flow
 from articles_suzaki.warehouse.client import get_async_mongodb
 from articles_suzaki.warehouse.statements import upsert_data
 
@@ -273,6 +274,7 @@ async def extract_metadata_stream(
             yield batch
 
 
+@logged_async_flow("ingestion_metadata")
 async def main(
     api_key: str = config.guardian_api_key,
     requests_per_second: int = 1,
