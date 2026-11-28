@@ -12,7 +12,7 @@ orchestration/
   config.py       # launch schemas and inclusive UTC date windows
   resources.py    # pipeline adapters and ingestion tuning
   ops.py          # window, metadata, articles, validation, transformation
-  jobs.py         # four jobs and config mappings
+  jobs.py         # jobs and config mappings
   schedules.py    # optional, stopped daily schedule
   definitions.py  # code location
 ```
@@ -64,13 +64,19 @@ starts):
 source: mock
 ```
 
-`historical_full_pipeline` and `ingestion_only_pipeline`:
+`historical_full_pipeline`, `ingestion_only_pipeline`, and
+`news_ingestion_only_pipeline`:
 
 ```yaml
 from_date: "2024-01-01"
 to_date: "2024-01-31"
 source: api
 ```
+
+`news_ingestion_only_pipeline` fetches article contents for existing pending
+metadata in the selected source and date window. It does not fetch metadata or
+run transformation. Metadata must already have the matching `ingestion_source`
+tag; records without it are not selected.
 
 `transformation_only_pipeline`:
 
@@ -87,6 +93,36 @@ transformer uses a half-open interval. It reads all matching raw articles,
 regardless of their ingestion source; transformation-only does not ingest.
 
 ## Schedule and operations
+
+### Flow logs and pipeline records
+
+Each running flow writes JSON Lines to
+`src/articles_suzaki/logging/flows/<flow>_<UTC-date>.log` by default. Flows
+include `ingestion_metadata`, `ingestion_news`, `transformation`, and
+`orchestration`. Set `ARTICLES_LOG_DIR` to change the directory. Compose stores
+these files in its `pipeline_logs` volume at `/var/log/articles_suzaki`.
+Dagster run IDs, job names, and attempt numbers are included in stage records.
+Standalone ingestion and transformation entry points also write flow logs.
+Log files may contain sensitive API URLs or error details; restrict access and
+redact them before sharing.
+
+Each Dagster run with a valid window creates or updates a row in
+`pipeline.runs`. The `batch_id` is `dagster_<run_id>` and `flow_name` is the
+job name. `window_start` is inclusive and `window_end` is exclusive, in UTC.
+`source` is `all` for transformation-only runs. Status changes from `started`
+to `completed` or `failed`; retries return it to `started`. Transformation
+stores its available inserted, updated, and unchanged counts. Other counts
+remain NULL when not measured. For example:
+
+```sql
+SELECT batch_id, flow_name, source, status, started_at, completed_at, error_message
+FROM pipeline.runs ORDER BY started_at DESC;
+```
+
+PostgreSQL must be reachable and permit schema initialization before processing
+starts. Invalid windows fail before a row is created. Abrupt process termination
+can leave a `started` row; consult Dagster run history to reconcile it.
+Database and file logging failures are surfaced rather than silently ignored.
 
 `daily_full_pipeline_schedule` is stopped by default. It runs at 00:00 UTC
 using `api` if explicitly enabled in the UI. It processes the UTC date when

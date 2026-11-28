@@ -8,6 +8,7 @@ from motor.motor_asyncio import AsyncIOMotorCollection
 
 from articles_suzaki.configuration.config import config
 from articles_suzaki.ingestion.data_mock.source import create_source, DataSource
+from articles_suzaki.logging.flows import logged_async_flow
 from articles_suzaki.warehouse.client import get_async_mongodb
 from articles_suzaki.warehouse.statements import upsert_data, get_news_ids
 
@@ -172,6 +173,7 @@ async def extract_news_stream(
             batch_ids = []
 
 
+@logged_async_flow("ingestion_news")
 async def main(
     api_key: str = config.guardian_api_key,
     requests_per_second: int = 1,

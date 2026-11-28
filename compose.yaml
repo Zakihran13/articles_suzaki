@@ -49,6 +49,7 @@ services:
       - "3010:3010"
     volumes:
       - dagster_data:/opt/dagster/dagster_home
+      - pipeline_logs:/var/log/articles_suzaki
       - ./docker/dagster.yaml:/opt/dagster/dagster_home/dagster.yaml:ro
     env_file: .env
     environment:
@@ -56,6 +57,7 @@ services:
       POSTGRESQL_DB_HOST: postgres
       POSTGRESQL_DB_PORT: "5432"
       MONGO_URI: mongodb://mongo:27017/
+      ARTICLES_LOG_DIR: /var/log/articles_suzaki
     depends_on:
       postgres:
         condition: service_healthy
@@ -74,6 +76,7 @@ services:
       - /app/docker/workspace.yaml
     volumes:
       - dagster_data:/opt/dagster/dagster_home
+      - pipeline_logs:/var/log/articles_suzaki
       - ./docker/dagster.yaml:/opt/dagster/dagster_home/dagster.yaml:ro
     env_file: .env
     environment:
@@ -81,6 +84,7 @@ services:
       POSTGRESQL_DB_HOST: postgres
       POSTGRESQL_DB_PORT: "5432"
       MONGO_URI: mongodb://mongo:27017/
+      ARTICLES_LOG_DIR: /var/log/articles_suzaki
     depends_on:
       dagster-webserver:
         condition: service_started
@@ -90,3 +94,4 @@ volumes:
   postgres_data:
   mongo_data:
   dagster_data:
+  pipeline_logs:

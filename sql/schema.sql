@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS pipeline.checkpoint (
 CREATE TABLE IF NOT EXISTS pipeline.runs (
     id SERIAL PRIMARY KEY,
     batch_id TEXT NOT NULL UNIQUE,
+    flow_name TEXT,
     source TEXT NOT NULL,
     window_start TIMESTAMP WITH TIME ZONE NOT NULL,
     window_end TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -73,6 +74,9 @@ CREATE TABLE IF NOT EXISTS pipeline.runs (
     started_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     completed_at TIMESTAMP WITH TIME ZONE
 );
+
+-- Existing installations may predate flow-level run tracking.
+ALTER TABLE pipeline.runs ADD COLUMN IF NOT EXISTS flow_name TEXT;
 
 -- Index for batch lookups
 CREATE INDEX IF NOT EXISTS idx_runs_batch_id ON pipeline.runs(batch_id);

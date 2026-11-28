@@ -8,6 +8,7 @@ from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from articles_suzaki.configuration.config import config
+from articles_suzaki.logging.flows import logged_async_flow
 from articles_suzaki.warehouse.client import init_async_db, get_async_mongodb
 from articles_suzaki.transformation.normalize import normalize_batch
 from articles_suzaki.transformation.deduplication import deduplicate_articles
@@ -197,6 +198,7 @@ async def stage_minibatch_stream(
     logger.info(f"Minibatch staging complete: {total_staged} total rows inserted")
 
 
+@logged_async_flow("transformation")
 async def transform_and_stage(
     db_mongo: AsyncIOMotorDatabase,
     engine_pg: AsyncEngine,
@@ -301,6 +303,7 @@ async def transform_and_stage(
         raise
 
 
+@logged_async_flow("transformation")
 async def main():
     """Main transformation entry point, configured through .env (see config.py).
 
